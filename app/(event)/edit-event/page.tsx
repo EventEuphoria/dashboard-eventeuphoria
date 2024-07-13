@@ -4,20 +4,26 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import useEvent from '@/hooks/useEvent';
 import FormEvent from '../components/FormEvent/FormEvent';
+import { EventValues } from '@/types/datatypes';
 
-const EditEvent: React.FC = () => {
-  const { id } = useParams();
+interface EditProps {
+  params: {
+    id: number;
+  };
+}
+
+const EditEvent: React.FC<EditProps> = ({ params }) => {
   const { getEvent, updateEvent } = useEvent();
-  const [initialValues, setInitialValues] = useState(null);
+  const [initialValues, setInitialValues] = useState<EventValues | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchEvent = async () => {
-      const event = await getEvent(id);
+      const event = await getEvent(params.id);
       if (event) {
         setInitialValues({
-          eventName: event.eventName,
+          eventName: event.name,
           description: event.description,
           date: event.date,
           time: event.time,
@@ -26,17 +32,18 @@ const EditEvent: React.FC = () => {
           eventType: event.eventType,
           category: event.category,
           ticketTiers: event.ticketTiers || [{ tierName: "", price: 0, availableSeats: 0 }],
-          vouchers: event.vouchers || [],
+          vouchers: event.eventVouchers || [],
+          referralQuota: event.referralQuota || 0,
           eventPicture: event.eventPicture || "",
         });
       }
       setLoading(false);
     };
     fetchEvent();
-  }, [id, getEvent]);
+  }, [params.id, getEvent]);
 
-  const handleSubmit = async (values) => {
-    const result = await updateEvent(id, values);
+  const handleSubmit = async (values: EventValues) => {
+    const result = await updateEvent(params.id, values);
     if (result) {
       alert('Event updated successfully!');
       router.push('/my-events');

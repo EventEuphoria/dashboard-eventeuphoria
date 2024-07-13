@@ -10,6 +10,7 @@ import imageCompression from "browser-image-compression";
 import useEvent from "@/hooks/useEvent";
 import { IoAdd } from "react-icons/io5";
 import { BiMinusCircle } from "react-icons/bi";
+import { EventValues } from '@/types/datatypes';
 
 const validationSchema = Yup.object().shape({
   eventName: Yup.string().required("Event name is required"),
@@ -34,70 +35,39 @@ const validationSchema = Yup.object().shape({
       expiryDate: Yup.date().required("Expiry date is required"),
     })
   ).nullable(),
-  refferalQuota: Yup.number()
-    .required("Limit for refferal quota is require"),
+  referralQuota: Yup.number()
+    .required("Limit for referral quota is required"),
   eventPicture: Yup.mixed()
     .required("Event picture is required")
-    .test("fileType", "Unsupported File Format", function (value) {
+    .test("fileType", "Unsupported File Format", function (value: any) {
       if (!value) return false;
       return ["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(value.type);
     })
-    .test("fileSize", "File too large", (value) => value && value.size <= 5048576),
+    .test("fileSize", "File too large", (value: any) => value && value.size <= 5048576),
 });
 
-const FormEvent: React.FC = () => {
+interface FormEventProps {
+  initialValues: EventValues;
+  onSubmit: (values: EventValues) => Promise<void>;
+}
+
+const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [formValues, setFormValues] = useState<any>(null);
   const router = useRouter();
-  const { loading, error, postEvent } = useEvent();
+  const { loading } = useEvent();
 
-  const initialValues = {
-    eventName: "",
-    description: "",
-    date: "",
-    time: "",
-    location: "",
-    city: "",
-    eventType: "",
-    category: "",
-    ticketTiers: [{ tierName: "", price: 0, availableSeats: 0 }],
-    vouchers: [],
-    refferalQuota: 0,
-    eventPicture: "",
-  };
-
-  const handleSubmit = async (values, { setSubmitting }) => {
-    const formData = {
-      ...values,
-      ticketTiers: values.ticketTiers.map(tier => ({
-        tierName: tier.tierName,
-        price: tier.price,
-        availableSeats: tier.availableSeats,
-      })),
-      vouchers: values.vouchers ? values.vouchers.map(voucher => ({
-        voucherName: voucher.voucherName,
-        discountAmount: voucher.discountAmount,
-        expiryDate: voucher.expiryDate,
-      })) : [],
-      eventPicture: values.eventPicture ? URL.createObjectURL(values.eventPicture) : ""
-    };
-
-    setFormValues(formData);
+  const handleSubmit = async (values: EventValues, { setSubmitting }: any) => {
+    setFormValues(values);
     setShowConfirmation(true);
     setSubmitting(false);
   };
 
   const handleConfirm = async () => {
     if (formValues) {
-      const result = await postEvent(formValues);
-      if (result) {
-        alert("Event created successfully!");
-        router.push("/my-event");
-      } else {
-        alert("Failed to create event. Please try again.");
-      }
+      await onSubmit(formValues);
+      setShowConfirmation(false);
     }
-    setShowConfirmation(false);
   };
 
   const handleImageUpload = async (
@@ -303,11 +273,11 @@ const FormEvent: React.FC = () => {
             </div>
 
             <div className={fieldContainer}>
-              <label htmlFor="description" className={labelStyle}>
-                Refferal Disc. Quota
+              <label htmlFor="referralQuota" className={labelStyle}>
+                Referral Quota
               </label>
-              <Field name="description" type="number" className={fieldStyle} />
-              <ErrorMessage name="description" component="div" className={errorStyle} />
+              <Field name="referralQuota" type="number" className={fieldStyle} />
+              <ErrorMessage name="referralQuota" component="div" className={errorStyle} />
             </div>
 
             <div className={fieldContainer}>

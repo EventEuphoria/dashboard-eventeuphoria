@@ -12,15 +12,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!isAuthenticated) {
       router.push('/login');
     } else if (currentUser && currentUser.role !== 'ORGANIZER') {
-      router.push('http://localhost:3000');
+      router.push('/login');
+    } else{
+        router.push('/')
     }
   }, [isAuthenticated, currentUser, router]);
 
   if (!isAuthenticated || (currentUser && currentUser.role !== 'ORGANIZER')) {
     return null;
+  } else{
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
 };
 
 export default ProtectedRoute;

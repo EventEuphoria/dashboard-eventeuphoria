@@ -42,7 +42,9 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
             setCurrentUser(response.data);
             setIsAuthenticated(true);
             if (response.data.role !== 'ORGANIZER') {
-                router.push('http://localhost:3000');
+                router.push('/login');
+            } else{
+                router.push("/")
             }
         } catch( error){
             setIsAuthenticated(false);
@@ -62,7 +64,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({children}) => {
             if (response.data.role === 'ORGANIZER') {
                 router.push('/');
             } else {
-                router.push('http://localhost:3000');
+                router.push('/login');
             }
         } catch (error) {
             throw new Error('Failed to login');

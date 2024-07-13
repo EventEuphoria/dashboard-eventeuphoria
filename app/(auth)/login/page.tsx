@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
           </h1>
           <Login />
           <span>
-            Don't have account?{" "}
+            Don&apos;t have account?{" "}
             <Link href="/register" className="text-dspPurple hover:scale-105 ease-in-out transition-all duration-500 hover:text-dspDarkPurple">
               Register here
             </Link>{" "}

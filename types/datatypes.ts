@@ -12,3 +12,32 @@ export interface User {
     updatedAt: string;
     deletedAt: string | null;
 }
+
+
+export interface TicketTier {
+    name: string;
+    price: number;
+    totalSeats: number;
+  }
+  
+  export interface Voucher {
+    voucherName: string;
+    discountAmount: number;
+    expiryDate: string;
+  }
+  
+  export interface EventValues {
+    eventName: string;
+    description: string;
+    date: string;
+    time: string;
+    location: string;
+    city: string;
+    eventType: string;
+    category: string;
+    ticketTiers: TicketTier[];
+    vouchers: Voucher[];
+    referralQuota: number;
+    eventPicture: string;
+  }
+  

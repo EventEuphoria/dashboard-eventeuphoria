@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import axios from 'axios';
+import apiClient from '@/services/apiClient';
 
 const useEvent = () => {
     const [loading, setLoading] = useState(false);
@@ -10,11 +10,7 @@ const useEvent = () => {
     const postEvent = async (formData: object) => {
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:8080/events', formData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const response = await apiClient.post('/events', formData);
             return response.data;
         } catch (err: any) {
             setError(err.message);
@@ -24,14 +20,10 @@ const useEvent = () => {
         }
     };
 
-    const updateEvent = async (id: string, formData: object) => {
+    const updateEvent = async (id: number, formData: object) => {
         setLoading(true);
         try {
-            const response = await axios.put(`http://localhost:8080/events/${id}`, formData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const response = await apiClient.put(`/events/${id}`, formData);
             return response.data;
         } catch (err: any) {
             setError(err.message);
@@ -41,10 +33,10 @@ const useEvent = () => {
         }
     };
 
-    const getEvent = async (id: string) => {
+    const getEvent = async (id: number) => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:8080/events/${id}`);
+            const response = await apiClient.get(`/events/${id}`);
             return response.data;
         } catch (err: any) {
             setError(err.message);
@@ -57,7 +49,7 @@ const useEvent = () => {
     const deleteEvent = async (id: string) => {
         setLoading(true);
         try {
-            const response = await axios.delete(`http://localhost:8080/events/${id}`);
+            const response = await apiClient.delete(`/events/${id}`);
             return response.data;
         } catch (err: any) {
             setError(err.message);
