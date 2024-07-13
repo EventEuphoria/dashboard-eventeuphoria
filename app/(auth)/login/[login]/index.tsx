@@ -22,6 +22,7 @@ const Login: React.FC = () => {
       onSubmit={async (values, { setSubmitting }) => {
         try {
           await login(values.email, values.password);
+          router.push('/dashboard');
         } catch (error) {
           console.log("Login error", error);
         } finally {

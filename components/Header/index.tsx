@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const Header: React.FC = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const { logout } = useAuth();
+  const { logout, currentUser } = useAuth();
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -30,16 +30,16 @@ const Header: React.FC = () => {
             onClick={toggleDropdown}
             className="flex border border-white gap-2 items-center bg-black hover:bg-dspPurple p-1 rounded-full"
           >
-            <RiAdminFill className="rounded-full text-tXxl" /> Amalia{" "}
+            <RiAdminFill className="rounded-full text-tXxl" /> {currentUser?.firstName}
             <span className="p-2 rounded-full bg-dspDarkPurple text-white">
               <IoIosArrowDown />
             </span>
           </button>
           {dropdownVisible && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
-              <Link href="https://www.eventeuphoria.fun/user" passHref>
+              <Link href="https://www.eventeuphoria.fun/profile" passHref>
                 <a className="block px-4 py-2 text-gray-800 hover:bg-gray-200">
-                  User Page
+                  Login as User
                 </a>
               </Link>
               <button

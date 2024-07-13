@@ -14,6 +14,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     currentUser: User | null;
     login: (email: string, password: string) => Promise<void>;
+    isLoading: boolean;
     logout: () => Promise<void>;
     getToken: () => string | null;
 }
@@ -37,26 +38,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const fetchProfile = async (token: string) => {
         try {
-            const response = await apiClient.get('/profile', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            setCurrentUser(response.data);
-            setIsAuthenticated(true);
-            if (response.data.role !== 'ORGANIZER') {
-                router.push('/');
-            } else {
-                router.push("dashboard/")
-            }
+          const response = await apiClient.get('/profile', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setCurrentUser(response.data);
+          setIsAuthenticated(true);
+          if (response.data.role !== 'ORGANIZER') {
+            router.push('https://www.eventeuphoria.fun');
+          }
         } catch (error) {
-            setIsAuthenticated(false);
-            removeToken();
-            router.push('/');
+          setIsAuthenticated(false);
+          removeToken();
+          router.push('https://www.eventeuphoria.fun');
         } finally {
-            setIsLoading(false);
+          setIsLoading(false);
         }
-    }
+      }
 
     const login = async (email: string, password: string) => {
         try {
@@ -93,7 +92,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const removeToken = () => destroyCookie(null, TOKEN_KEY, { path: '/', domain: '.eventeuphoria.fun' });
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout, getToken }}>
+        <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout, getToken, isLoading }}>
             {!isLoading && children}
         </AuthContext.Provider>
     );
