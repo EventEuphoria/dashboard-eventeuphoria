@@ -7,11 +7,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ProtectedRoute>
       <div>
         <TopNav />
         <div>{children}</div>
       </div>
-    </ProtectedRoute>
   );
 }

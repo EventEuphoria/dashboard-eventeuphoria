@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setCurrentUser(response.data);
             setIsAuthenticated(true);
             if (response.data.role !== 'ORGANIZER') {
-                router.push('/login');
+                router.push('/');
             } else {
                 router.push("dashboard/")
             }
