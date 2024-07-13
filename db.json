@@ -1,0 +1,24 @@
+{
+  "events": [
+    {
+      "id": "ad95",
+      "eventName": "We party in da house boy",
+      "description": "LETS GO",
+      "date": "2024-07-19",
+      "time": "23:11",
+      "location": "Nongsa Villa",
+      "city": "Batam",
+      "eventType": "Paid",
+      "category": "Music",
+      "ticketTiers": [
+        {
+          "tierName": "Free",
+          "price": 50000,
+          "availableSeats": 50
+        }
+      ],
+      "vouchers": [],
+      "eventPicture": "blob:http://localhost:3001/82384a6b-b52d-4a80-bd55-0d5c2f3a4b6e"
+    }
+  ]
+}
