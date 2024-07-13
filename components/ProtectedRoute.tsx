@@ -12,9 +12,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!isAuthenticated) {
       router.push('/login');
     } else if (currentUser && currentUser.role !== 'ORGANIZER') {
-      router.push('www.eventeuphoria.fun');
+      router.push('/');
     } else{
-        router.push('/')
+        router.push('dashboard/')
     }
   }, [isAuthenticated, currentUser, router]);
 

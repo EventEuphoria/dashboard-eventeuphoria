@@ -45,9 +45,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setCurrentUser(response.data);
             setIsAuthenticated(true);
             if (response.data.role !== 'ORGANIZER') {
-                router.push('www.eventeuphoria.fun');
+                router.push('/');
             } else {
-                router.push("/")
+                router.push("dashboard/")
             }
         } catch (error) {
             setIsAuthenticated(false);
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const { token } = response.data;
             setToken(token);
             await fetchProfile(token);
-            router.push('/')
+            router.push('dashboard/')
         } catch (error) {
             throw new Error('Failed to login');
         }
