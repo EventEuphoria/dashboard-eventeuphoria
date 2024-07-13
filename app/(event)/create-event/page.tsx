@@ -1,3 +1,5 @@
+"use client";
+
 import FormEvent from "../components/FormEvent/FormEvent";
 import useEvent from "@/hooks/useEvent";
 import { EventValues } from "@/types/datatypes";
