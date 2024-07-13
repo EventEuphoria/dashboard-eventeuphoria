@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     } else if (currentUser && currentUser.role !== 'ORGANIZER') {
       router.push('/login');
     } else{
-        router.push('/')
+        router.push('dashboard.eventeuphoria.fun')
     }
   }, [isAuthenticated, currentUser, router]);
 

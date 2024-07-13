@@ -47,12 +47,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (response.data.role !== 'ORGANIZER') {
                 router.push('/login');
             } else {
-                router.push("/")
+                router.push("dashboard.eventeuphoria.fun")
             }
         } catch (error) {
             setIsAuthenticated(false);
             removeToken();
-            router.push('http://localhost:3000');
+            router.push('eventeuphoria.fun');
         } finally {
             setIsLoading(false);
         }
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setToken(token);
             await fetchProfile(token);
             if (response.data.role === 'ORGANIZER') {
-                router.push('/');
+                router.push('dashboard.eventeuphoria.fun');
             } else {
                 router.push('/login');
             }
