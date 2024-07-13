@@ -11,7 +11,6 @@ const navList: NavList[] = [
   { links: "/my-event", name: "My Event" },
   { links: "/my-event/transaction", name: "Transaction" },
   { links: "/my-event/attendees", name: "Attendees" },
-  { links: "/statistic", name: "Statistic" },
 ];
 
 const SideNavList: React.FC = () => {
