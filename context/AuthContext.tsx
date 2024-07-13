@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
             setIsAuthenticated(false);
             removeToken();
-            router.push('/');
+            router.push('/login');
         } finally {
             setIsLoading(false);
         }

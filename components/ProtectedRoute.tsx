@@ -11,20 +11,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
-    } else if (currentUser) {
-      if (currentUser.role === 'ORGANIZER') {
-        router.push('https://dashboard.eventeuphoria.fun/');
-      } else {
-        router.push('https://www.eventeuphoria.fun/');
-      }
+    } else if (currentUser && currentUser.role !== 'ORGANIZER') {
+      router.push('www.eventeuphoria.fun');
+    } else{
+        router.push('/')
     }
   }, [isAuthenticated, currentUser, router]);
 
-  if (!isAuthenticated || !currentUser) {
+  if (!isAuthenticated || (currentUser && currentUser.role !== 'ORGANIZER')) {
     return null;
-  } else {
+  } else{
     return <>{children}</>;
   }
+
 };
 
 export default ProtectedRoute;
