@@ -47,12 +47,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (response.data.role !== 'ORGANIZER') {
                 router.push('/login');
             } else {
-                router.push("/")
+                router.push("dashboard/")
             }
         } catch (error) {
             setIsAuthenticated(false);
             removeToken();
-            router.push('eventeuphoria.fun');
+            router.push('/');
         } finally {
             setIsLoading(false);
         }
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const { token } = response.data;
             setToken(token);
             await fetchProfile(token);
-            router.push('/')
+            router.push('dashboard/')
         } catch (error) {
             throw new Error('Failed to login');
         }
