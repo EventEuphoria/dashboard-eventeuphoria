@@ -1,4 +1,4 @@
-import ProtectedRoute from "@/components/ProtectedRoute";
+
 import TopNav from "./components/TopNav";
 
 export default function RootLayout({

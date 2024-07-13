@@ -32,6 +32,25 @@ const useEvent = () => {
         }
     };
 
+    const uploadImage = async (eventId: number, image: File) => {
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', image);
+            const response = await apiClient.post(`/events/${eventId}/image`, formData, {
+                headers: {
+                    ...getAuthHeader(),
+                },
+            });
+            return response.data;
+        } catch (err: any) {
+            setError(err.message);
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const updateEvent = async (id: number, formData: object) => {
         setLoading(true);
         try {
@@ -51,6 +70,7 @@ const useEvent = () => {
     };
 
     const getEvent = async (id: number) => {
+        console.log()
         setLoading(true);
         try {
             const response = await apiClient.get(`/events/${id}`, {
@@ -80,7 +100,7 @@ const useEvent = () => {
         }
     };
 
-    return { loading, error, postEvent, updateEvent, getEvent, deleteEvent };
+    return { loading, error, postEvent, updateEvent, getEvent, deleteEvent, uploadImage };
 };
 
 export default useEvent;

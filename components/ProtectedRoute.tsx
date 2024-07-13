@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       if (!isLoading) {
         if (!isAuthenticated) {
           router.push('/login');
-        } else{
+        } else if(currentUser?.role === "ORGANIZER"){
             router.push('/')
         }
       }

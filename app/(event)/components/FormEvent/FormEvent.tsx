@@ -2,15 +2,14 @@
 
 import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ConfirmationDialog from "../ConfirmationDialog";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import imageCompression from "browser-image-compression";
 import useEvent from "@/hooks/useEvent";
 import { IoAdd } from "react-icons/io5";
 import { BiMinusCircle } from "react-icons/bi";
-import { EventValues } from '@/types/datatypes';
+import { EventValues } from "@/types/datatypes";
+import apiClient from "@/services/apiClient";
 
 const validationSchema = Yup.object().shape({
   eventName: Yup.string().required("Event name is required"),
@@ -21,30 +20,30 @@ const validationSchema = Yup.object().shape({
   city: Yup.string().required("City is required"),
   eventType: Yup.string().required("Event type is required"),
   category: Yup.string().required("Category is required"),
-  ticketTiers: Yup.array().of(
-    Yup.object().shape({
-      name: Yup.string().required("Tier name is required"),
-      price: Yup.number().min(0, "Price must be non-negative"),
-      totalSeats: Yup.number().required("Total seats are required").min(1, "Must have at least one seat"),
-    })
-  ).required("Ticket tiers are required"),
-  vouchers: Yup.array().of(
-    Yup.object().shape({
-      code: Yup.string().required("Voucher code is required"),
-      discountPercentage: Yup.number().required("Discount percentage is required").min(0, "Discount must be non-negative"),
-      startDate: Yup.date().required("Start date is required"),
-      endDate: Yup.date().required("End date is required"),
-    })
-  ).nullable(),
-  referralQuota: Yup.number()
-    .notRequired(), // Optional for paid events
-  eventPicture: Yup.mixed()
-    .required("Event picture is required")
-    .test("fileType", "Unsupported File Format", function (value: any) {
-      if (!value) return false;
-      return ["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(value.type);
-    })
-    .test("fileSize", "File too large", (value: any) => value && value.size <= 5048576),
+  ticketTiers: Yup.array()
+    .of(
+      Yup.object().shape({
+        name: Yup.string().required("Tier name is required"),
+        price: Yup.number().min(0, "Price must be non-negative"),
+        totalSeats: Yup.number()
+          .required("Total seats are required")
+          .min(1, "Must have at least one seat"),
+      })
+    )
+    .required("Ticket tiers are required"),
+  vouchers: Yup.array()
+    .of(
+      Yup.object().shape({
+        code: Yup.string().required("Voucher code is required"),
+        discountPercentage: Yup.number()
+          .required("Discount percentage is required")
+          .min(0, "Discount must be non-negative"),
+        startDate: Yup.date().required("Start date is required"),
+        endDate: Yup.date().required("End date is required"),
+      })
+    )
+    .nullable(),
+  referralQuota: Yup.number().notRequired(),
 });
 
 interface FormEventProps {
@@ -55,8 +54,21 @@ interface FormEventProps {
 const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [formValues, setFormValues] = useState<any>(null);
-  const router = useRouter();
   const { loading } = useEvent();
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await apiClient.get('/categories'); // Adjust the endpoint as necessary
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (values: EventValues, { setSubmitting }: any) => {
     setFormValues(values);
@@ -68,26 +80,6 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
     if (formValues) {
       await onSubmit(formValues);
       setShowConfirmation(false);
-    }
-  };
-
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setFieldValue: (field: string, value: any) => void
-  ) => {
-    const file = event.currentTarget.files?.[0];
-    if (file) {
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-      };
-      try {
-        const compressedFile = await imageCompression(file, options);
-        setFieldValue("eventPicture", compressedFile);
-      } catch (error) {
-        console.error(error);
-      }
     }
   };
 
@@ -110,7 +102,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                 Event Name
               </label>
               <Field name="eventName" type="text" className={fieldStyle} />
-              <ErrorMessage name="eventName" component="div" className={errorStyle} />
+              <ErrorMessage
+                name="eventName"
+                component="div"
+                className={errorStyle}
+              />
             </div>
 
             <div className={fieldContainer}>
@@ -119,12 +115,15 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
               </label>
               <Field name="category" as="select" className={fieldStyle}>
                 <option value="" label="Select category" />
-                <option value="Music" label="Music" />
-                <option value="Art" label="Art" />
-                <option value="Technology" label="Technology" />
-                <option value="Food" label="Food" />
+                {categories.map((category) => (
+                  <option key={category} value={category} label={category} />
+                ))}
               </Field>
-              <ErrorMessage name="category" component="div" className={errorStyle} />
+              <ErrorMessage
+                name="category"
+                component="div"
+                className={errorStyle}
+              />
             </div>
 
             <div className={fieldContainer}>
@@ -132,7 +131,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                 Description
               </label>
               <Field name="description" as="textarea" className={fieldStyle} />
-              <ErrorMessage name="description" component="div" className={errorStyle} />
+              <ErrorMessage
+                name="description"
+                component="div"
+                className={errorStyle}
+              />
             </div>
 
             <div className="flex gap-3 w-full">
@@ -141,7 +144,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                   Date
                 </label>
                 <Field name="date" type="date" className={fieldStyle} />
-                <ErrorMessage name="date" component="div" className={errorStyle} />
+                <ErrorMessage
+                  name="date"
+                  component="div"
+                  className={errorStyle}
+                />
               </div>
 
               <div className={fieldContainer}>
@@ -149,7 +156,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                   Time
                 </label>
                 <Field name="time" type="time" className={fieldStyle} />
-                <ErrorMessage name="time" component="div" className={errorStyle} />
+                <ErrorMessage
+                  name="time"
+                  component="div"
+                  className={errorStyle}
+                />
               </div>
             </div>
 
@@ -158,7 +169,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                 Location
               </label>
               <Field name="location" type="text" className={fieldStyle} />
-              <ErrorMessage name="location" component="div" className={errorStyle} />
+              <ErrorMessage
+                name="location"
+                component="div"
+                className={errorStyle}
+              />
             </div>
 
             <div className={fieldContainer}>
@@ -178,7 +193,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                 <option value="Paid" label="Paid" />
                 <option value="Free" label="Free" />
               </Field>
-              <ErrorMessage name="eventType" component="div" className={errorStyle} />
+              <ErrorMessage
+                name="eventType"
+                component="div"
+                className={errorStyle}
+              />
             </div>
 
             <div className={fieldContainer}>
@@ -191,35 +210,79 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                     {values.ticketTiers.map((tier, index) => (
                       <div key={index} className="my-2 border p-2 rounded">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-bold">Tier {index + 1}</h4>
-                          <button type="button" onClick={() => remove(index)} className="text-red-500">
+                          <h4 className="text-lg font-bold">
+                            Tier {index + 1}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => remove(index)}
+                            className="text-red-500"
+                          >
                             <BiMinusCircle size={24} />
                           </button>
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`ticketTiers[${index}].name`} className={labelStyle}>
+                          <label
+                            htmlFor={`ticketTiers[${index}].name`}
+                            className={labelStyle}
+                          >
                             Tier Name
                           </label>
-                          <Field name={`ticketTiers[${index}].name`} type="text" className={fieldStyle} />
-                          <ErrorMessage name={`ticketTiers[${index}].name`} component="div" className={errorStyle} />
+                          <Field
+                            name={`ticketTiers[${index}].name`}
+                            type="text"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`ticketTiers[${index}].name`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`ticketTiers[${index}].price`} className={labelStyle}>
+                          <label
+                            htmlFor={`ticketTiers[${index}].price`}
+                            className={labelStyle}
+                          >
                             Price
                           </label>
-                          <Field name={`ticketTiers[${index}].price`} type="number" className={fieldStyle} />
-                          <ErrorMessage name={`ticketTiers[${index}].price`} component="div" className={errorStyle} />
+                          <Field
+                            name={`ticketTiers[${index}].price`}
+                            type="number"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`ticketTiers[${index}].price`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`ticketTiers[${index}].totalSeats`} className={labelStyle}>
+                          <label
+                            htmlFor={`ticketTiers[${index}].totalSeats`}
+                            className={labelStyle}
+                          >
                             Total Seats
                           </label>
-                          <Field name={`ticketTiers[${index}].totalSeats`} type="number" className={fieldStyle} />
-                          <ErrorMessage name={`ticketTiers[${index}].totalSeats`} component="div" className={errorStyle} />
+                          <Field
+                            name={`ticketTiers[${index}].totalSeats`}
+                            type="number"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`ticketTiers[${index}].totalSeats`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                       </div>
                     ))}
-                    <Button type="button" onClick={() => push({ name: "", price: 0, totalSeats: 0 })}>
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        push({ name: "", price: 0, totalSeats: 0 })
+                      }
+                    >
                       <IoAdd size={24} /> Add Tier
                     </Button>
                   </>
@@ -237,42 +300,102 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                     {values.vouchers.map((voucher, index) => (
                       <div key={index} className="my-2 border p-2 rounded">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-lg font-bold">Voucher {index + 1}</h4>
-                          <button type="button" onClick={() => remove(index)} className="text-red-500">
+                          <h4 className="text-lg font-bold">
+                            Voucher {index + 1}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => remove(index)}
+                            className="text-red-500"
+                          >
                             <BiMinusCircle size={24} />
                           </button>
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].code`} className={labelStyle}>
+                          <label
+                            htmlFor={`vouchers[${index}].code`}
+                            className={labelStyle}
+                          >
                             Voucher Code
                           </label>
-                          <Field name={`vouchers[${index}].code`} type="text" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].code`} component="div" className={errorStyle} />
+                          <Field
+                            name={`vouchers[${index}].code`}
+                            type="text"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`vouchers[${index}].code`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].discountPercentage`} className={labelStyle}>
+                          <label
+                            htmlFor={`vouchers[${index}].discountPercentage`}
+                            className={labelStyle}
+                          >
                             Discount Percentage
                           </label>
-                          <Field name={`vouchers[${index}].discountPercentage`} type="number" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].discountPercentage`} component="div" className={errorStyle} />
+                          <Field
+                            name={`vouchers[${index}].discountPercentage`}
+                            type="number"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`vouchers[${index}].discountPercentage`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].startDate`} className={labelStyle}>
+                          <label
+                            htmlFor={`vouchers[${index}].startDate`}
+                            className={labelStyle}
+                          >
                             Start Date
                           </label>
-                          <Field name={`vouchers[${index}].startDate`} type="date" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].startDate`} component="div" className={errorStyle} />
+                          <Field
+                            name={`vouchers[${index}].startDate`}
+                            type="date"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`vouchers[${index}].startDate`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].endDate`} className={labelStyle}>
+                          <label
+                            htmlFor={`vouchers[${index}].endDate`}
+                            className={labelStyle}
+                          >
                             End Date
                           </label>
-                          <Field name={`vouchers[${index}].endDate`} type="date" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].endDate`} component="div" className={errorStyle} />
+                          <Field
+                            name={`vouchers[${index}].endDate`}
+                            type="date"
+                            className={fieldStyle}
+                          />
+                          <ErrorMessage
+                            name={`vouchers[${index}].endDate`}
+                            component="div"
+                            className={errorStyle}
+                          />
                         </div>
                       </div>
                     ))}
-                    <Button type="button" onClick={() => push({ code: "", discountPercentage: 0, startDate: "", endDate: "" })}>
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        push({
+                          code: "",
+                          discountPercentage: 0,
+                          startDate: "",
+                          endDate: "",
+                        })
+                      }
+                    >
                       <IoAdd size={24} /> Add Voucher
                     </Button>
                   </>
@@ -284,26 +407,23 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
               <label htmlFor="referralQuota" className={labelStyle}>
                 Referral Quota
               </label>
-              <Field name="referralQuota" type="number" className={fieldStyle} />
-              <ErrorMessage name="referralQuota" component="div" className={errorStyle} />
-            </div>
-
-            <div className={fieldContainer}>
-              <label htmlFor="eventPicture" className={labelStyle}>
-                Event Picture
-              </label>
-              <input
-                id="eventPicture"
-                name="eventPicture"
-                type="file"
-                accept="image/jpeg, image/png, image/webp, image/jpg"
-                onChange={(event) => handleImageUpload(event, setFieldValue)}
-                className="p-2 border rounded"
+              <Field
+                name="referralQuota"
+                type="number"
+                className={fieldStyle}
               />
-              <ErrorMessage name="eventPicture" component="div" className={errorStyle} />
+              <ErrorMessage
+                name="referralQuota"
+                component="div"
+                className={errorStyle}
+              />
             </div>
 
-            <Button type="submit" disabled={isSubmitting || loading} className="bg-blue-500 text-white px-4 py-2 rounded">
+            <Button
+              type="submit"
+              disabled={isSubmitting || loading}
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
               Submit
             </Button>
           </Form>

@@ -7,7 +7,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function Home() {
   return (
-    <ProtectedRoute>
     <main className="w-full flex gap-5">
       <div className="flex flex-col gap-5 w-[70%] ">
         <div className="bg-hero-img bg-cover bg-center py-10 px-5 rounded-xl ">
@@ -50,6 +49,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-    </ProtectedRoute>
   );
 }
