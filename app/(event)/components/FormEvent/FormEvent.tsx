@@ -23,20 +23,21 @@ const validationSchema = Yup.object().shape({
   category: Yup.string().required("Category is required"),
   ticketTiers: Yup.array().of(
     Yup.object().shape({
-      tierName: Yup.string().required("Tier name is required"),
+      name: Yup.string().required("Tier name is required"),
       price: Yup.number().min(0, "Price must be non-negative"),
-      availableSeats: Yup.number().required("Available seats are required").min(1, "Must have at least one seat"),
+      totalSeats: Yup.number().required("Total seats are required").min(1, "Must have at least one seat"),
     })
   ).required("Ticket tiers are required"),
   vouchers: Yup.array().of(
     Yup.object().shape({
-      voucherName: Yup.string().required("Voucher name is required"),
-      discountAmount: Yup.number().required("Discount amount is required").min(0, "Discount must be non-negative"),
-      expiryDate: Yup.date().required("Expiry date is required"),
+      code: Yup.string().required("Voucher code is required"),
+      discountPercentage: Yup.number().required("Discount percentage is required").min(0, "Discount must be non-negative"),
+      startDate: Yup.date().required("Start date is required"),
+      endDate: Yup.date().required("End date is required"),
     })
   ).nullable(),
   referralQuota: Yup.number()
-    .required("Limit for referral quota is required"),
+    .notRequired(), // Optional for paid events
   eventPicture: Yup.mixed()
     .required("Event picture is required")
     .test("fileType", "Unsupported File Format", function (value: any) {
@@ -196,11 +197,11 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                           </button>
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`ticketTiers[${index}].tierName`} className={labelStyle}>
+                          <label htmlFor={`ticketTiers[${index}].name`} className={labelStyle}>
                             Tier Name
                           </label>
-                          <Field name={`ticketTiers[${index}].tierName`} type="text" className={fieldStyle} />
-                          <ErrorMessage name={`ticketTiers[${index}].tierName`} component="div" className={errorStyle} />
+                          <Field name={`ticketTiers[${index}].name`} type="text" className={fieldStyle} />
+                          <ErrorMessage name={`ticketTiers[${index}].name`} component="div" className={errorStyle} />
                         </div>
                         <div className={fieldContainer}>
                           <label htmlFor={`ticketTiers[${index}].price`} className={labelStyle}>
@@ -210,15 +211,15 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                           <ErrorMessage name={`ticketTiers[${index}].price`} component="div" className={errorStyle} />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`ticketTiers[${index}].availableSeats`} className={labelStyle}>
-                            Available Seats
+                          <label htmlFor={`ticketTiers[${index}].totalSeats`} className={labelStyle}>
+                            Total Seats
                           </label>
-                          <Field name={`ticketTiers[${index}].availableSeats`} type="number" className={fieldStyle} />
-                          <ErrorMessage name={`ticketTiers[${index}].availableSeats`} component="div" className={errorStyle} />
+                          <Field name={`ticketTiers[${index}].totalSeats`} type="number" className={fieldStyle} />
+                          <ErrorMessage name={`ticketTiers[${index}].totalSeats`} component="div" className={errorStyle} />
                         </div>
                       </div>
                     ))}
-                    <Button type="button" onClick={() => push({ tierName: "", price: 0, availableSeats: 0 })}>
+                    <Button type="button" onClick={() => push({ name: "", price: 0, totalSeats: 0 })}>
                       <IoAdd size={24} /> Add Tier
                     </Button>
                   </>
@@ -242,29 +243,36 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
                           </button>
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].voucherName`} className={labelStyle}>
-                            Voucher Name
+                          <label htmlFor={`vouchers[${index}].code`} className={labelStyle}>
+                            Voucher Code
                           </label>
-                          <Field name={`vouchers[${index}].voucherName`} type="text" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].voucherName`} component="div" className={errorStyle} />
+                          <Field name={`vouchers[${index}].code`} type="text" className={fieldStyle} />
+                          <ErrorMessage name={`vouchers[${index}].code`} component="div" className={errorStyle} />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].discountAmount`} className={labelStyle}>
-                            Discount Amount
+                          <label htmlFor={`vouchers[${index}].discountPercentage`} className={labelStyle}>
+                            Discount Percentage
                           </label>
-                          <Field name={`vouchers[${index}].discountAmount`} type="number" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].discountAmount`} component="div" className={errorStyle} />
+                          <Field name={`vouchers[${index}].discountPercentage`} type="number" className={fieldStyle} />
+                          <ErrorMessage name={`vouchers[${index}].discountPercentage`} component="div" className={errorStyle} />
                         </div>
                         <div className={fieldContainer}>
-                          <label htmlFor={`vouchers[${index}].expiryDate`} className={labelStyle}>
-                            Expiry Date
+                          <label htmlFor={`vouchers[${index}].startDate`} className={labelStyle}>
+                            Start Date
                           </label>
-                          <Field name={`vouchers[${index}].expiryDate`} type="date" className={fieldStyle} />
-                          <ErrorMessage name={`vouchers[${index}].expiryDate`} component="div" className={errorStyle} />
+                          <Field name={`vouchers[${index}].startDate`} type="date" className={fieldStyle} />
+                          <ErrorMessage name={`vouchers[${index}].startDate`} component="div" className={errorStyle} />
+                        </div>
+                        <div className={fieldContainer}>
+                          <label htmlFor={`vouchers[${index}].endDate`} className={labelStyle}>
+                            End Date
+                          </label>
+                          <Field name={`vouchers[${index}].endDate`} type="date" className={fieldStyle} />
+                          <ErrorMessage name={`vouchers[${index}].endDate`} component="div" className={errorStyle} />
                         </div>
                       </div>
                     ))}
-                    <Button type="button" onClick={() => push({ voucherName: "", discountAmount: 0, expiryDate: "" })}>
+                    <Button type="button" onClick={() => push({ code: "", discountPercentage: 0, startDate: "", endDate: "" })}>
                       <IoAdd size={24} /> Add Voucher
                     </Button>
                   </>
