@@ -41,3 +41,8 @@ export interface TicketTier {
     eventPicture: string;
   }
   
+
+export interface Category{
+  image?: string;
+  category: string;
+}

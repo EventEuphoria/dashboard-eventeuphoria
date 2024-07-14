@@ -9,8 +9,6 @@ interface NavList {
 const navList: NavList[] = [
   { links: "/", name: "Dashboard" },
   { links: "/my-event", name: "My Event" },
-  { links: "/my-event/transaction", name: "Transaction" },
-  { links: "/my-event/attendees", name: "Attendees" },
 ];
 
 const SideNavList: React.FC = () => {

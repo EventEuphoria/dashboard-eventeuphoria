@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             fetchProfile(token);
         } else {
             setIsLoading(false);
-            router.push('/login');
         }
     }, []);
 
@@ -53,7 +52,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
           setIsAuthenticated(false);
           removeToken();
-          router.push('/login');
         } finally {
           setIsLoading(false);
         }

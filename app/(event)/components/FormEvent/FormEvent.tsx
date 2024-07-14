@@ -9,7 +9,7 @@ import useEvent from "@/hooks/useEvent";
 import { IoAdd } from "react-icons/io5";
 import { BiMinusCircle } from "react-icons/bi";
 import { EventValues } from "@/types/datatypes";
-import apiClient from "@/services/apiClient";
+import { categories } from "@/data/data";
 
 const validationSchema = Yup.object().shape({
   eventName: Yup.string().required("Event name is required"),
@@ -55,20 +55,6 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [formValues, setFormValues] = useState<any>(null);
   const { loading } = useEvent();
-  const [categories, setCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await apiClient.get('/categories'); // Adjust the endpoint as necessary
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   const handleSubmit = async (values: EventValues, { setSubmitting }: any) => {
     setFormValues(values);
@@ -116,7 +102,7 @@ const FormEvent: React.FC<FormEventProps> = ({ initialValues, onSubmit }) => {
               <Field name="category" as="select" className={fieldStyle}>
                 <option value="" label="Select category" />
                 {categories.map((category) => (
-                  <option key={category} value={category} label={category} />
+                  <option key={category.category} value={category.category} label={category.category} />
                 ))}
               </Field>
               <ErrorMessage

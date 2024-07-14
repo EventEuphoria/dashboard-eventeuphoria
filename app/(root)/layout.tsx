@@ -13,10 +13,12 @@ export default function RootLayout({
           <div className="md:w-[18%] relative">
             <SideNav />
           </div>
-          <div className="mr-5 flex flex-col gap-2 md:w-[82%] justify-between">
+          <div className="mr-5 flex flex-col gap-2 md:w-[82%]">
             <Header />
-            {children}
-            <Footer />
+            <div className="">
+              {children}
+            </div>
+            
           </div>
         </div>
     </div>
