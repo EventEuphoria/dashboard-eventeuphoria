@@ -13,6 +13,15 @@ export interface User {
     deletedAt: string | null;
 }
 
+export interface AuthUser {
+  id: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+
 
 export interface TicketTier {
     name: string;

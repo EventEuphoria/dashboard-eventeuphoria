@@ -1,107 +1,52 @@
+// context/AuthContext.tsx
 "use client";
 
-import { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { createContext, useContext, ReactNode } from "react";
+import { SessionProvider, useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import apiClient from "@/services/apiClient";
-import { User } from "@/types/datatypes";
-import { parseCookies, setCookie, destroyCookie } from 'nookies';
+import { AuthUser } from "@/types/datatypes";
+
+interface AuthContextType {
+  isAuthenticated: boolean;
+  currentUser: AuthUser | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  isLoading: boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = 'sid';
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-interface AuthContextType {
-    isAuthenticated: boolean;
-    currentUser: User | null;
-    login: (email: string, password: string) => Promise<void>;
-    isLoading: boolean;
-    logout: () => Promise<void>;
-    getToken: () => string | null;
-}
+  const login = async (email: string, password: string) => {
+    await signIn("credentials", {
+      email,
+      password,
+      callbackUrl: "/"
+    });
+  };
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const router = useRouter();
+  const logout = async () => {
+    await signOut({ callbackUrl: "/login" });
+  };
 
-    useEffect(() => {
-        const cookies = parseCookies();
-        const token = cookies[TOKEN_KEY];
-        if (token) {
-            fetchProfile(token);
-        } else {
-            setIsLoading(false);
-        }
-    }, []);
+  const isAuthenticated = status === "authenticated";
+  const isLoading = status === "loading";
+  const currentUser = session?.user as AuthUser | null;
 
-    const fetchProfile = async (token: string) => {
-        try {
-          const response = await apiClient.get('/profile', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setCurrentUser(response.data);
-          setIsAuthenticated(true);
-          if (response.data.role == 'ORGANIZER') {
-            router.push('/');
-          } else {
-            router.push('/login');
-          }
-        } catch (error) {
-          setIsAuthenticated(false);
-          removeToken();
-        } finally {
-          setIsLoading(false);
-        }
-      }
-
-    const login = async (email: string, password: string) => {
-        try {
-            const response = await apiClient.post('/login', { email, password });
-            const { token } = response.data;
-            setToken(token);
-            await fetchProfile(token);
-            router.push('/')
-        } catch (error) {
-            throw new Error('Failed to login');
-        }
-    }
-
-    const logout = async () => {
-        const cookies = parseCookies();
-        const token = cookies[TOKEN_KEY];
-        if (token) {
-            await apiClient.post('/logout', {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            removeToken();
-            setIsAuthenticated(false);
-            setCurrentUser(null);
-            router.push('/login');
-        }
-    }
-
-    const getToken = () => parseCookies()[TOKEN_KEY];
-
-    const setToken = (token: string) => setCookie(null, TOKEN_KEY, token, { path: '/', domain: '.eventeuphoria.fun', secure: true, sameSite: 'none' });
-
-    const removeToken = () => destroyCookie(null, TOKEN_KEY, { path: '/', domain: '.eventeuphoria.fun' });
-
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout, getToken, isLoading }}>
-            {!isLoading && children}
-        </AuthContext.Provider>
-    );
-}
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, currentUser, login, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };
